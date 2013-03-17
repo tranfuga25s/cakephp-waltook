@@ -40,7 +40,7 @@ App::uses('HttpSocket', 'Network/Http');
     *  2 - json
     *  3 - xml
     */	
-    private $formato_credito = 2;
+    private $formato_credito = 3;
 	
 	
 	private $mensajes_error = array(
@@ -236,39 +236,33 @@ App::uses('HttpSocket', 'Network/Http');
 	  	}
 	  	return $inputchr2;
 	}
-	
 
-	 /**
-	  * Funciones Waltook -  API
-	  */	
-	//Toma el mensaje que se envió por GET (Callback)
-	function waltook_capture_message()
-	{
-		$w_qstr=$_GET['w_qstr']; //Toma la información encriptada proveniente del servidor Waltook
-		
-		if(!$_wqstr)
-		{
-		
-			$w_qstr=$this->decrypt($w_qstr); // Desencripta
-			
-			@parse_str($w_qstr, $w_data); // Procesa los datos y los guarda en el array $w_data
-			if(is_array($w_data))
-			{
-				$w_data['status']=1;
-				return $w_data;
-		
-			}else
-			{
-				return array( "error" => 3 ); // Error de lectura. No se pudo desencriptar.
-			}
-		}else {
-			return array( "error" => 5 );	// 	No se recibieron datos.
-		}
-		
-	}
-	
    /**
-    * Función interna
+    * Funcion llamada como callback
+    * Agregar la dirección /waltook/waltook/recibir como callback en la api
+    * @return Array Array con los datos o el error
+    */	
+	public function recibir() {
+		if( $this->request->isGet() ) {
+			debug( $this->request->data );
+			$w_qstr = $this->decrypt( $this->request->data );
+			@parse_str($w_qstr, $w_data );
+			if( is_array( $w_data ) ) {
+				$w_data['status'] = 1;
+				$w_data['message'] = $this->mensajes_error[$w_data['status']];
+				return $w_data;
+			} else {
+				return array( 'error' => 3, 'message' => $this->mensajes_error[3] );
+			}
+		} else {
+			return array( "error" => 5, 'message' => $this->mensajes_error[5] );
+		}
+	}
+
+   /**
+    * Función interna par construir la url de envios y la encriptacion
+    * @param mixed $w_data Datos a encritar y enviar
+    * @return string Datos encriptados
     */	
 	private function waltook_build_messagequery( $w_data )
 	{
@@ -276,47 +270,35 @@ App::uses('HttpSocket', 'Network/Http');
 		$w_qstr=$this->encrypt($w_qstr); //Encripta		
 		return $w_qstr;		
 	}
-	
-	//Consulta por mensajes en el servidor
-	private function waltook_get_messages($status=null,$tid=0,$format=1,$flag=1)
+
+   /**
+    * Obtener la lista de mensajes
+    * @param mixed $status Estado de los mensajes
+    * @param integer $tid Identificador de los mensajes
+    * @param integer $format Formato de devolucion
+    * @param boolean $flag Bandera
+    * @returns Lista de mensajes
+    */
+    public function obtenerListaMensajes( $status = null, $tid = 0, $format = 1, $flag = 1 ) 
 	{
-		
-		
 		$tid=intval($tid);
+		$w_data = array(
+			'client_id' => $this->client_id,
+			'format' => $format,
+			'tid' => $tid,
+			'status' => $status,
+			'flag' => $flag
+		);
 		
-		//Construye el array con los parámetros de la consulta
-		
-		$w_data['client_id']=WALTOOK_API_CLIENT_ID;
-		
-		$w_data['format']=$format;
-		
-		$w_data['tid']=$tid;
-		
-		$w_data['status']=$status;
-		
-		$w_data['flag']=$flag;
-		
-		
-		
-		$qstr=waltook_build_messagequery($w_data);
-			
-		
-			
-		$resp=@waltook_api_connect("q=get&client_id=".WALTOOK_API_CLIENT_ID."&w_qstr=".urlencode($qstr));
-		
-		
+		$qstr=$this->waltook_build_messagequery($w_data);
+		$resp=@$this->waltook_api_connect("q=get&client_id=".$this->client_id."&w_qstr=".urlencode($qstr));
 		if($resp)
-		{
-			
-			return $this->decrypt($resp);
-			
-		}else
-		{
-			return false; 
-		}
-		
+		{ return $this->decrypt($resp); } else { return false; }
 	}
-	
+
+	 /**
+	  * Funciones Waltook -  API
+	  */	
 	
 	private function waltook_get_messages_array($status=null,$tid=0,$flag=1)
 	{
