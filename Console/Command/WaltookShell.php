@@ -1,10 +1,10 @@
 <?php
-App::uses( 'SmsComponent', 'Waltoolk.Controller/Component' );
+App::uses( 'SmsComponent', 'Waltook.Controller/Component' );
 /**
  * Consola para testear la configuración del sistema waltoolk
  * @author Esteban Zeller
  */
-class WaltoolkShell extends Shell {
+class WaltookShell extends Shell {
 	
 	/**
 	 * Main execution of shell
@@ -13,16 +13,15 @@ class WaltoolkShell extends Shell {
 	 */
 	public function main() {
 		$this->Sms = new SmsComponent();
-		$this->Sms->initialize();
+		//$this->Sms->initialize();
+		$this->Sms->parametros( 200, '83978016f41d43314766b7116f922284', 'POST' );
 		$this->out( 'Consola de pruebas del sistema Waltoolk' );
 		$this->out( '======= == ======= === ======= ========' );
 		$this->out( ' ' );
-		if( Configure::read( 'Waltoolk.cliente_id' ) == false ) {
-			$this->out( 'Por favor, configure el sistema para que se pueda leer el numero de cliente y la API_KEY de Waltoolk' );
-			return;
-		} else {
-			$this->out( 'Utilizando número de cliente: '. Configure::read( 'Waltoolk.cliente_id' ) );
-		}
+		$this->out( 'Utilizando número de cliente: '. $this->Sms->getClientID() );
+		$this->out( 'Utilizando key: '.$this->Sms->getKey() );
+		$this->out( 'Utilizando método:'.$this->Sms->getMethod() );
+		$this->out( 'Utilizando url:'.$this->Sms->getUrl() );
 		$this->out( '----> Consultando creditos' );
 		$devolucion = $this->Sms->getCreditoMensajes();
 		$this->out( 'Cantidad de mensajes salientes: '. $devolucion['salida'] );
