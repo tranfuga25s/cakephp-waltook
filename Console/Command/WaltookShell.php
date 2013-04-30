@@ -14,7 +14,7 @@ class WaltookShell extends Shell {
 	public function main() {
 		$this->Sms = new SmsComponent();
 		//$this->Sms->initialize();
-		$this->Sms->parametros( 200, '83978016f41d43314766b7116f922284', 'POST' );
+		$this->Sms->parametros( 200, '83978016f41d43314766b7116f922284', 'GET' );
 		$this->out( 'Consola de pruebas del sistema Waltoolk' );
 		$this->out( '======= == ======= === ======= ========' );
 		$this->out( ' ' );

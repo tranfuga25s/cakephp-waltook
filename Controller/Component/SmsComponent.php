@@ -104,12 +104,12 @@ App::uses('HttpSocket', 'Network/Http');
 			'uid' => $numero,
 			'txt' => $mensaje,
 			'tid' => $this->_numero_propio,
-			'client_id' => $this->_cliente_id
+			'client_id' => $this->_client_id
 		);
 		
 		$qstr=waltook_build_messagequery($w_data);
 			
-		$data = "q=send&client_id=".$this->_cliente_id."&w_qstr=".urlencode( $qstr );
+		$data = "q=send&client_id=".$this->_client_id."&w_qstr=".urlencode( $qstr );
 		$resp_qstr = @$this->waltook_api_connect( $data );
 
 		if( $resp_qstr )
@@ -130,12 +130,12 @@ App::uses('HttpSocket', 'Network/Http');
     * @return double cantidad de credito o falso si fallo
     */
     private function getCredito() {
-        //Construye el array con los parámetros de la consulta
-		$w_data['client_id']=$this->cliente_id;
+        // Construye el array con los parámetros de la consulta
+		$w_data['client_id']=$this->_client_id;
 		$w_data['format'] = $this->formato_credito;
 		
 		$qstr=$this->waltook_build_messagequery( $w_data );
-		$resp=@$this->waltook_api_connect("q=credit&client_id=".$this->client_id."&w_qstr=".urlencode($qstr));
+		$resp=@$this->waltook_api_connect("q=credit&client_id=".$this->_client_id."&w_qstr=".urlencode($qstr));
 		
 		if($resp)
 		{
@@ -152,7 +152,6 @@ App::uses('HttpSocket', 'Network/Http');
 	public function getCreditoMensajes() {
 				
 		$resp = $this->getCredito();
-
 		if( $resp )
 		{
 
@@ -164,17 +163,13 @@ App::uses('HttpSocket', 'Network/Http');
 				$resp_data = simplexml_load_string( $resp );
 			}
 			if( $resp_data['status'] != 1 ) {
-				throw new NotFoundException( "El servidor Waltook contesto: ".$this->mensajes_error[$resp_data['status']] );
+				throw new NotFoundException( "El servidor Waltook contesto: ".$resp_data['status'].'-'.$this->mensajes_error[$resp_data['status']] );
 			}
 			if( !$resp_data['credit']['out'] )
 			{
-				//$resp_data=array();
-				//$resp_data['status']=3; // Error de lectura. No se pudo desencriptar.
 				throw new NotFoundException( 'Error de desencriptacion del mensaje de credito' );
 			}
 		} else {
-			//$resp_data=array();
-			//$resp_data['status']=2;// Error de conexión
 			throw new NotFoundException( 'Error de conexion con el servidor' );
 		}
 		return array(
@@ -200,7 +195,7 @@ App::uses('HttpSocket', 'Network/Http');
 		{
 			if ($i < $inputlen )
 			{
-				$inputchr1 .= chr(ord(substr($input, $i, 1))+$this->key{$i%32});
+				$inputchr1 .= chr(ord(substr($input, $i, 1))+$this->_key{$i%32});
 			}
 			$i++;
 	  	}
@@ -210,7 +205,7 @@ App::uses('HttpSocket', 'Network/Http');
 	  	{
 			if ($i < $inputlen )
 			{
-				$inputchr2 .= chr(ord(substr($inputchr1, $i, 1))+$this->key{($i%10)+10});
+				$inputchr2 .= chr(ord(substr($inputchr1, $i, 1))+$this->_key{($i%10)+10});
 			}
 			$i++;
 	  	}
@@ -234,7 +229,7 @@ App::uses('HttpSocket', 'Network/Http');
 		{
 			if ($i < $inputlen)
 			{
-				$inputchr1 .= chr(ord(substr($input, $i,1))-$this->key{($i%10)+10});
+				$inputchr1 .= chr(ord(substr($input, $i,1))-$this->_key{($i%10)+10});
 			}
 			$i++;
 	  	}
@@ -245,7 +240,7 @@ App::uses('HttpSocket', 'Network/Http');
 	  	{
 			if ($i < $inputlen)
 			{
-				$inputchr2 .= chr(ord(substr($inputchr1, $i,1))-$this->key{$i%32});
+				$inputchr2 .= chr(ord(substr($inputchr1, $i,1))-$this->_key{$i%32});
 			}
 			$i++;
 	  	}
@@ -355,16 +350,16 @@ App::uses('HttpSocket', 'Network/Http');
 
 		if( $this->method == "POST" )
 		{
-		  $response = $sock->post( $this->_url, $data );
+		  $response = $sock->post( "http://api.waltook.com/index.php", $data );
 		} else {
-		  $response = $sock->get( $this->_url, $data );	 
+		  $response = $sock->get( "http://api.waltook.com/index.php", $data );	 
 		}
 		if( $response->isOk() ) {
 			$cuerpo = $response->body();
 			if( substr_compare( $cuerpo, 'ERROR', 0 ) == 0 ) {
 				foreach( $this->mensajes_error as $num => $mje ) {
-					if( intval( substr( $cuerpo, 5, 6 ) ) == $key ) {
-						throw new NotFoundException( "El servidor Waltook respondió con error: ".$key." ".$this->mensajes_error[$key] );
+					if( intval( substr( $cuerpo, 5, 6 ) ) == $num ) {
+						throw new NotFoundException( "El servidor Waltook respondió con error: ".$num." ".$this->mensajes_error[$num] );
 					}					
 				}
 				throw new NotFoundException( "El servidor Waltook respondió con un error desconocido: ".$cuerpo );								
