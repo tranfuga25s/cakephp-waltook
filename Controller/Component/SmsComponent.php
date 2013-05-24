@@ -283,11 +283,11 @@ App::uses('HttpSocket', 'Network/Http');
 
    /**
     * Obtener la lista de mensajes
-    * @param mixed $status Estado de los mensajes
+    * @param mixed $status Estado de los mensajes. 1=leidos, 0=no leidos, null = todos.
     * @param integer $tid Identificador de los mensajes
-    * @param integer $format Formato de devolucion
-    * @param boolean $flag Bandera
-    * @returns Lista de mensajes
+    * @param integer $format Formato de devolucion. 1=Serializado, 2=JSON, 3=XML
+    * @param boolean $flag Bandera de no leido. Si se pasa un 0, los mensajes obtenidos se pasan a leidos. Si se coloca como 1, se mantiene el estado de "No leido"
+    * @returns Lista de mensajes o falso en caso de error
     */
     public function obtenerListaMensajes( $status = null, $tid = 0, $format = 1, $flag = 1 )
 	{
@@ -303,7 +303,25 @@ App::uses('HttpSocket', 'Network/Http');
 		$qstr=$this->waltook_build_messagequery($w_data);
 		$resp=@$this->waltook_api_connect("q=get&client_id=".$this->client_id."&w_qstr=".urlencode($qstr));
 		if($resp)
-		{ return $this->decrypt($resp); } else { return false; }
+		{
+		    $data = $this->decrypt( $resp );
+            if( !isset($data['messages'] ) ) {
+                throw new NotFoundException( 'No se encontró la variable de mensajes' );
+            }
+
+            $returns = array();
+            $estados = array( 0 => "No leído", 1 => "Leido" );
+            // Cada elemento del array tendrá que estar pasado a un elemento tipo CakePHP
+            foreach( $data['messages'] as $mensaje ) {
+                $mensaje['texto'] = $mensaje['txt'];
+                unset( $mensaje['txt'] );
+                $mensaje['estado_texto'] = $estados[$mensaje['status']];
+                $returns[] = array( 'Sms' => $mensaje );
+            }
+            return $returns;
+        } else {
+            return false;
+        }
 	}
 
 	 /**
