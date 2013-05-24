@@ -305,6 +305,13 @@ App::uses('HttpSocket', 'Network/Http');
 		if($resp)
 		{
 		    $data = $this->decrypt( $resp );
+            if( $format == 1 ) {        // Formato 1 -> Serializado
+                $data = unserialize( $data );
+            } else if( $format == 2 ) { // Formato 2 -> JSON
+                $data = json_decode( $data );
+            } else {                    // Formato 3 -> XML
+                $data = simplexml_load_string( $data );
+            }
             if( !isset($data['messages'] ) ) {
                 throw new NotFoundException( 'No se encontró la variable de mensajes' );
             }
@@ -331,6 +338,7 @@ App::uses('HttpSocket', 'Network/Http');
      * Si no está implementada la función el mensaje se loggeará en el sistema.
      */
     public function recibirMensaje() {
+
 
     }
 
