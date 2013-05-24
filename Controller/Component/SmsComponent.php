@@ -324,6 +324,16 @@ App::uses('HttpSocket', 'Network/Http');
         }
 	}
 
+    /**
+     * Callback llamado por el sistema para cuando nos llega un sms
+     * Esta función se encarga de realizar todas las acciones correspondientes para generar el mensaje y dejarlo a disposición del controller
+     * Se deberá implementar el método afterReciveMessage( $message = array() ) para realizar alguna acción con el mensaje recibido.
+     * Si no está implementada la función el mensaje se loggeará en el sistema.
+     */
+    public function recibirMensaje() {
+
+    }
+
 	 /**
 	  * Función que obtiene la lista de mensajes que hay en el servidor
       * @param $status integer Estado de los mensajes
