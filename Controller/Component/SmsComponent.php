@@ -3,46 +3,46 @@ App::uses('Component', 'Controller');
 App::uses('HttpSocket', 'Network/Http');
 /**
  * Clase utilizada para administrar el sistema de envío de mensajes sms mediante waltook
- * @author Esteban Zeller 
+ * @author Esteban Zeller
  */
  class SmsComponent extends Component {
- 	
+
    /**
     * Clave de encriptación de datos con el servidor
     */
 	private $_key = null;
-	
+
    /**
     * Identificador de cliente
-    */	
+    */
 	private $_client_id = null;
-	
+
    /**
     * Método de comunicación con el sistema
-    */	
+    */
 	private $_method = null;
-	
+
    /**
     * Dirección de comunicación con la API de Waltook
     * @var string $url
-    */	
+    */
 	private $_url = "http://api.waltook.com/index.php";
-	
+
    /**
     * Numero de respuestas
     */
     private $_tid = 0;
-	
+
    /**
     * Formato de pedido de credito - Seteado fijo en la funcion de solicitud en el api
     * Posibles parametros:
     *  1 - Serializado
     *  2 - json
     *  3 - xml
-    */	
+    */
     private $_formato_credito = 1;
-	
-	
+
+
 	private $mensajes_error = array(
 		1  => 'Transacción exitosa',
 		2  => 'Error de conexión con api.woltook.com',
@@ -55,10 +55,10 @@ App::uses('HttpSocket', 'Network/Http');
 		11 => 'Cuenta suspendida',
 		12 => 'No hay credito suficiente para realizar la operación.'
 	);
-	
+
    /**
     * Inicialización del sistema
-    */	
+    */
 	public function initialize( /*Controller $controller*/ ) {
 		// Cargo la configuracion
 		if( Configure::read( 'Waltoolk.cliente_id' ) == false ) {
@@ -68,24 +68,24 @@ App::uses('HttpSocket', 'Network/Http');
 		$this->_client_id = Configure::read( 'Waltoolk.client_id' );
 		$this->_method = Configure::read( 'Waltoolk.method' );
 	}
- 
+
  	public function parametros( $cliente_id, $key, $method ) {
 		$this->_client_id = $cliente_id;
 		$this->_key = $key;
-		$this->_method = $method; 		
+		$this->_method = $method;
  	}
-	
+
 	public function getClientId() { return $this->_client_id; }
 	public function getKey() { return $this->_key; }
 	public function getMethod() { return $this->_method; }
 	public function getUrl() { return $this->_url; }
-	
+
    /**
     * Función para enviar mensajes desde el sistema
     * @param Array $numero Numero de teléfono, o un array con varios números si se desea enviar a varias personas simultaneamente
     * @param string $mensaje Mensaje a enviar
     * @return Verdadero si se pudo enviar
-    * @throws NotSendedException 
+    * @throws NotSendedException
     */
  	public function enviar( $numero = null, $mensaje = null ) {
  		if( $numero == null ) {
@@ -93,7 +93,7 @@ App::uses('HttpSocket', 'Network/Http');
  		} else if( $mensaje == null ) {
  			throw new NotFoundException( 'No hay un mensaje para enviar' );
  		}
-		
+
 		// En el caso de que existan varios números a enviar
 		if( is_array( $numero ) ) {
 			$numero = implode( ',', $numero );
@@ -106,9 +106,9 @@ App::uses('HttpSocket', 'Network/Http');
 			'tid' => $this->_numero_propio,
 			'client_id' => $this->_client_id
 		);
-		
+
 		$qstr=waltook_build_messagequery($w_data);
-			
+
 		$data = "q=send&client_id=".$this->_client_id."&w_qstr=".urlencode( $qstr );
 		$resp_qstr = @$this->waltook_api_connect( $data );
 
@@ -118,13 +118,13 @@ App::uses('HttpSocket', 'Network/Http');
 			@parse_str( $resp_qstr, $resp_data ); // Procesa los datos y los guarda en el array $w_data
 			if( $resp_data['status'] )
  			{ return true; }
- 			else 
+ 			else
  			{ throw new NotFoundException( $this->mensajes_error[$resp_data['status']] );  }// Error de lectura. No se pudo desencriptar.
 		} else {
 			 throw new NotFoundException( 'Error de conexión con el servidor Waltook' ); // Error de conexión
-		} 
+		}
  	}
- 
+
    /**
     * Funcion para obtener la cantidad de credito disponible
     * @return double cantidad de credito o falso si fallo
@@ -133,24 +133,24 @@ App::uses('HttpSocket', 'Network/Http');
         // Construye el array con los parámetros de la consulta
 		$w_data['client_id']=$this->_client_id;
 		$w_data['format'] = $this->formato_credito;
-		
+
 		$qstr=$this->waltook_build_messagequery( $w_data );
 		$resp=@$this->waltook_api_connect("q=credit&client_id=".$this->_client_id."&w_qstr=".urlencode($qstr));
-		
+
 		if($resp)
 		{
 			return $this->decrypt( $resp );
 		} else {
-			return false; 
+			return false;
 		}
     }
-	
+
    /**
 	* Funcion para obtener el credito de mensajes disponibles para enviar y recibir
-    * @return array Array con entrada y salida de cantidad de mensajes 
+    * @return array Array con entrada y salida de cantidad de mensajes
 	*/
 	public function getCreditoMensajes() {
-				
+
 		$resp = $this->getCredito();
 		if( $resp )
 		{
@@ -175,11 +175,11 @@ App::uses('HttpSocket', 'Network/Http');
 		return array(
 			'entrada' => $resp_data['credit']['in'],
 			'salida' => $resp_data['credit']['out'],
-			'status' => $this->mensajes_error[$resp_data['status']] 
+			'status' => $this->mensajes_error[$resp_data['status']]
 		);
 	}
- 
- 
+
+
    /**
     * Funcion de encriptacion de contenido
     * @param mixed $input Elemento a encriptar
@@ -189,7 +189,7 @@ App::uses('HttpSocket', 'Network/Http');
 		$inputlen = strlen($input);
 	  	$inputchr1 = "";
 		$inputchr2 = "";
-		
+
 		$i = 0;
 		while ($i <= $inputlen)
 		{
@@ -199,7 +199,7 @@ App::uses('HttpSocket', 'Network/Http');
 			}
 			$i++;
 	  	}
-	  
+
 	  	$i = 0;
 		while ($i <= $inputlen)
 	  	{
@@ -211,7 +211,7 @@ App::uses('HttpSocket', 'Network/Http');
 	  	}
 		return base64_encode($inputchr2);
 	}
-	
+
 	/**
 	 * Función de desencriptacion de datos
 	 * @param mixed $input Cadena encriptada
@@ -219,11 +219,11 @@ App::uses('HttpSocket', 'Network/Http');
 	 */
 	private function decrypt($input)
 	{
-	 	$input = base64_decode($input);	
+	 	$input = base64_decode($input);
 		$inputlen = strlen($input);
 		$inputchr1 = "";
 		$inputchr2 = "";
-		
+
 	 	$i = 0;
 		while ($i <= $inputlen)
 		{
@@ -233,8 +233,8 @@ App::uses('HttpSocket', 'Network/Http');
 			}
 			$i++;
 	  	}
-	  
-	  
+
+
 	 	$i = 0;
 		while ($i <= $inputlen)
 	  	{
@@ -251,7 +251,7 @@ App::uses('HttpSocket', 'Network/Http');
     * Funcion llamada como callback
     * Agregar la dirección /waltook/waltook/recibir como callback en la api
     * @return Array Array con los datos o el error
-    */	
+    */
 	public function recibir() {
 		if( $this->request->isGet() ) {
 			debug( $this->request->data );
@@ -273,12 +273,12 @@ App::uses('HttpSocket', 'Network/Http');
     * Función interna par construir la url de envios y la encriptacion
     * @param mixed $w_data Datos a encritar y enviar
     * @return string Datos encriptados
-    */	
+    */
 	private function waltook_build_messagequery( $w_data )
 	{
-		$w_qstr=http_build_query($w_data); // Construye		
-		$w_qstr=$this->encrypt($w_qstr); //Encripta		
-		return $w_qstr;		
+		$w_qstr=http_build_query($w_data); // Construye
+		$w_qstr=$this->encrypt($w_qstr); //Encripta
+		return $w_qstr;
 	}
 
    /**
@@ -289,7 +289,7 @@ App::uses('HttpSocket', 'Network/Http');
     * @param boolean $flag Bandera
     * @returns Lista de mensajes
     */
-    public function obtenerListaMensajes( $status = null, $tid = 0, $format = 1, $flag = 1 ) 
+    public function obtenerListaMensajes( $status = null, $tid = 0, $format = 1, $flag = 1 )
 	{
 		$tid=intval($tid);
 		$w_data = array(
@@ -299,7 +299,7 @@ App::uses('HttpSocket', 'Network/Http');
 			'status' => $status,
 			'flag' => $flag
 		);
-		
+
 		$qstr=$this->waltook_build_messagequery($w_data);
 		$resp=@$this->waltook_api_connect("q=get&client_id=".$this->client_id."&w_qstr=".urlencode($qstr));
 		if($resp)
@@ -307,23 +307,26 @@ App::uses('HttpSocket', 'Network/Http');
 	}
 
 	 /**
-	  * Funciones Waltook -  API
-	  */	
-	
+	  * Función que obtiene la lista de mensajes que hay en el servidor
+      * @param $status integer Estado de los mensajes
+      * @param $tid integer ?
+      * @param $flag integer ?
+      * @return Array Mensajes
+	  */
 	private function waltook_get_messages_array($status=null,$tid=0,$flag=1)
 	{
-		
-		
+
+
 		$tid=intval($tid);
-		
-		
-		
+
+
+
 		$resp=waltook_get_messages($status,$tid,1,$flag);
-			
+
 		if($resp)
 		{
 			$resp_data=unserialize($resp);
-			
+
 			if(!$resp_data['status'])
 			{
 				$resp_data=array();
@@ -336,23 +339,22 @@ App::uses('HttpSocket', 'Network/Http');
 		}
 		return $resp_data;
 	}
-	
-	
+
+
    /**
     * Función para conectar con el servidor de Waltook
     * @param mixed $data Datos a enviar
     * @throws NotImplementedException Si hubo algún error
-    * @return Datos de resupesta 
-    */	
+    * @return Datos de resupesta
+    */
 	private function waltook_api_connect( $data ) {
-	
+
 		$sock = new HttpSocket();
 
-		if( $this->method == "POST" )
-		{
-		  $response = $sock->post( "http://api.waltook.com/index.php", $data );
+		if( $this->method == "POST" ) {
+		  $response = $sock->post( $this->_url, $data );
 		} else {
-		  $response = $sock->get( "http://api.waltook.com/index.php", $data );	 
+		  $response = $sock->get ( $this->_url, $data );
 		}
 		if( $response->isOk() ) {
 			$cuerpo = $response->body();
@@ -360,15 +362,15 @@ App::uses('HttpSocket', 'Network/Http');
 				foreach( $this->mensajes_error as $num => $mje ) {
 					if( intval( substr( $cuerpo, 5, 6 ) ) == $num ) {
 						throw new NotFoundException( "El servidor Waltook respondió con error: ".$num." ".$this->mensajes_error[$num] );
-					}					
+					}
 				}
-				throw new NotFoundException( "El servidor Waltook respondió con un error desconocido: ".$cuerpo );								
+				throw new NotFoundException( "El servidor Waltook respondió con un error desconocido: ".$cuerpo );
 			} else {
 				return $response->body();
 			}
 		} else {
-			throw new NotImplementedException( 'El sistema devolvió una consulta con error:' . $response->code.'<br />' );		
+			throw new NotImplementedException( 'El sistema devolvió una consulta con error:' . $response->code.'<br />' );
 		}
 	}
-  	
+
  }
