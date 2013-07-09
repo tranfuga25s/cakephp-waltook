@@ -42,6 +42,8 @@ App::uses('HttpSocket', 'Network/Http');
     */
     private $_formato_credito = 1;
 
+    private $_limite_caracteres = 150;
+
 
 	private $mensajes_error = array(
 		1  => 'Transacción exitosa',
@@ -61,7 +63,7 @@ App::uses('HttpSocket', 'Network/Http');
     */
 	public function initialize( /*Controller $controller*/ ) {
 		// Cargo la configuracion
-		if( Configure::read( 'Waltoolk.cliente_id' ) == false ) {
+		if( Configure::read( 'Waltoolk.client_id' ) == false ) {
 			throw new NotImplementedException( 'El sistema de Waltook no está configurado' );
 		}
 		$this->_key = Configure::read( 'Waltoolk.key' );
@@ -79,6 +81,13 @@ App::uses('HttpSocket', 'Network/Http');
 	public function getKey() { return $this->_key; }
 	public function getMethod() { return $this->_method; }
 	public function getUrl() { return $this->_url; }
+
+    public static function habilitado() {
+        // Verifico que esté configurado
+        if( ! Configure::check( 'Waltook.client_id' ) || ! Configure::check( 'Waltook.key' ) ) {
+            return false;
+        }
+    }
 
    /**
     * Función para enviar mensajes desde el sistema
@@ -165,8 +174,9 @@ App::uses('HttpSocket', 'Network/Http');
 			if( $resp_data['status'] != 1 ) {
 				throw new NotFoundException( "El servidor Waltook contesto: ".$resp_data['status'].'-'.$this->mensajes_error[$resp_data['status']] );
 			}
-			if( !$resp_data['credit']['out'] )
+			if( !array_key_exists( 'credit', $resp_data ) )
 			{
+			    $this->log( "Error de desencriptacion de mensajes de waltook: ".print_r( $resp_data, true ) );
 				throw new NotFoundException( 'Error de desencriptacion del mensaje de credito' );
 			}
 		} else {
