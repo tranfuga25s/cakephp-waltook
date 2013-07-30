@@ -61,7 +61,7 @@ App::uses('HttpSocket', 'Network/Http');
    /**
     * Inicialización del sistema
     */
-	public function initialize( /*Controller $controller*/ ) {
+	public function initialize( Controller $controller ) {
 		// Cargo la configuracion
 		if( Configure::read( 'Waltoolk.client_id' ) == false ) {
 			throw new NotImplementedException( 'El sistema de Waltook no está configurado' );
@@ -116,7 +116,7 @@ App::uses('HttpSocket', 'Network/Http');
 			'client_id' => $this->_client_id
 		);
 
-		$qstr=waltook_build_messagequery($w_data);
+		$qstr=$this->waltook_build_messagequery($w_data);
 
 		$data = "q=send&client_id=".$this->_client_id."&w_qstr=".urlencode( $qstr );
 		$resp_qstr = @$this->waltook_api_connect( $data );
@@ -259,7 +259,7 @@ App::uses('HttpSocket', 'Network/Http');
 
    /**
     * Funcion llamada como callback
-    * Agregar la dirección /waltook/waltook/recibir como callback en la api
+    * Agregar la dirección del controlador que recibirá los mensajes como callback en la api
     * @return Array Array con los datos o el error
     */
 	public function recibir() {
@@ -303,7 +303,7 @@ App::uses('HttpSocket', 'Network/Http');
 	{
 		$tid=intval($tid);
 		$w_data = array(
-			'client_id' => $this->client_id,
+			'client_id' => $this->_client_id,
 			'format' => $format,
 			'tid' => $tid,
 			'status' => $status,
@@ -311,7 +311,7 @@ App::uses('HttpSocket', 'Network/Http');
 		);
 
 		$qstr=$this->waltook_build_messagequery($w_data);
-		$resp=@$this->waltook_api_connect("q=get&client_id=".$this->client_id."&w_qstr=".urlencode($qstr));
+		$resp=@$this->waltook_api_connect("q=get&client_id=".$this->_client_id."&w_qstr=".urlencode($qstr));
 		if($resp)
 		{
 		    $data = $this->decrypt( $resp );
@@ -322,18 +322,21 @@ App::uses('HttpSocket', 'Network/Http');
             } else {                    // Formato 3 -> XML
                 $data = simplexml_load_string( $data );
             }
-            if( !isset($data['messages'] ) ) {
+            if( ! array_key_exists( 'messages', $data ) ) {
                 throw new NotFoundException( 'No se encontró la variable de mensajes' );
             }
 
             $returns = array();
             $estados = array( 0 => "No leído", 1 => "Leido" );
-            // Cada elemento del array tendrá que estar pasado a un elemento tipo CakePHP
-            foreach( $data['messages'] as $mensaje ) {
-                $mensaje['texto'] = $mensaje['txt'];
-                unset( $mensaje['txt'] );
-                $mensaje['estado_texto'] = $estados[$mensaje['status']];
-                $returns[] = array( 'Sms' => $mensaje );
+            if( count( $data['messages'] ) > 0 ) {
+                // Cada elemento del array tendrá que estar pasado a un elemento tipo CakePHP
+                foreach( $data['messages'] as $mensaje ) {
+                    $mensaje['texto'] = $mensaje['txt'];
+                    unset( $mensaje['txt'] );
+                    $mensaje['estado_texto'] = $estados[$mensaje['status']];
+                    $mensaje['fechahora'] = date( 'd-m-Y H:i:s', $mensaje['timestamp'] );
+                    $returns[] = array( 'Sms' => $mensaje );
+                }
             }
             return $returns;
         } else {
@@ -351,41 +354,6 @@ App::uses('HttpSocket', 'Network/Http');
 
 
     }
-
-	 /**
-	  * Función que obtiene la lista de mensajes que hay en el servidor
-      * @param $status integer Estado de los mensajes
-      * @param $tid integer ?
-      * @param $flag integer ?
-      * @return Array Mensajes
-	  */
-	private function waltook_get_messages_array($status=null,$tid=0,$flag=1)
-	{
-
-
-		$tid=intval($tid);
-
-
-
-		$resp=waltook_get_messages($status,$tid,1,$flag);
-
-		if($resp)
-		{
-			$resp_data=unserialize($resp);
-
-			if(!$resp_data['status'])
-			{
-				$resp_data=array();
-				$resp_data['status']=3; // Error de lectura. No se pudo desencriptar.
-			}
-		}else
-		{
-			$resp_data=array();
-			$resp_data['status']=2;// Error de conexión
-		}
-		return $resp_data;
-	}
-
 
    /**
     * Función para conectar con el servidor de Waltook
