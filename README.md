@@ -14,13 +14,18 @@ Configuración
 Son necesarios 2 elementos para hacer funcionar este plugin. En el archivo app/Plugin/Waltoolk/Config/bootstrap.php
 se deberá ingresar:
 
+```
 Configure::write( 'Waltook.client_id', ID_CLIENTE );
 Configure::write( 'Waltook.cliente_key', KEY );
 Configure::write( 'Waltook.method', 'POST' );
+Configure::write( 'Waltook.request_code', 'TSSFE' );
+```
 
 Cuando se hace la carga del plugin será necesario hacerlo de la siguiente manera:
 
+```
 CakePlugin::load( 'Waltoolk', array( 'bootstrap' => true ) );
+```
 
 Uso
 ===

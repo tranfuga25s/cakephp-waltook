@@ -294,9 +294,6 @@ App::uses('HttpSocket', 'Network/Http');
 				$w_data['message'] = $this->mensajes_error[$w_data['status']];
                 $w_data['fechahora'] = date( $this->_date_format, $w_data['timestamp'] );
 				$mensaje = array( 'Sms' => $w_data );
-                $this->loadModel( 'Waltook.Sms' );
-                $this->Sms->save( $mensaje );
-                $this->devolucionCorrecta();
 			} else {
                 $this->Sms->devolucionIncorrecta();
        		    $this->log( "Error de recepción de sms por callback".print_r( array( 'error' => 3, 'message' => $this->mensajes_error[3] ), true ) );
