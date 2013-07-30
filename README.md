@@ -32,7 +32,9 @@ Uso
 
 Para utilizarlo será necesario cargar el componente
 
+```
 public $components = array( 'Waltook.Sms' );
+```
 
 y dentro de la aplicación se podrán utilizar los siguientes métodos:
 
@@ -40,20 +42,24 @@ Envio de mensajes
 ----- -- --------
 
 Para enviar un mensaje a un numero de teléfono:
-
+```
 if( $this->Sms->enviar( '3424535453', 'Mensaje' ) ) {
 	$this->Session->setFlash( 'Mensaje enviado correctamente' );
 }
+```
 
 o varios destinatarios
 
-if( $this->Sms->enviar( array( '1432543534','232543543' ), 'Mensaje' ) ) {
-}
+```
+$this->Sms->enviar( array( '1432543534','232543543' ), 'Mensaje' );
+```
 
 Vista de cantidad de credito disponible
 ----- -- -------- -- ------- ----------
 
+```
 $credito = $this->Sms->getCredito();
+```
 
 El array devuelto por esta funcion tendrá el siguiente formato:
 array(
@@ -65,7 +71,9 @@ array(
 Lista de mensajes recibidos
 ----- -- -------- ---------
 
+```
 $mensajes = $this->Sms->obtenerListaMensajes( $status, $tid, $format, $flag )
+```
 
 * status: Estado de los mensajes. 1=leidos, 0=no leidos, null = todos (por defecto).
 * tid: Identificador de los mensajes
@@ -73,6 +81,8 @@ $mensajes = $this->Sms->obtenerListaMensajes( $status, $tid, $format, $flag )
 * flag: Bandera de no leido. Si se pasa un 0, los mensajes obtenidos se pasan a leidos. Si se coloca como 1, se mantiene el estado de "No leido"
 
 La devolución será un array con el formato de cake:
+
+```
 array(
     [0] => array(
         'Sms' => array(
@@ -86,6 +96,7 @@ array(
     ),
     [1] => .....
 )
+```
 
 si no existen mensajes, se devuelve un array vacío.
 
@@ -97,7 +108,9 @@ Si su identificador es por ejemplo: RSF y el sistema recibe un mensaje de texto 
 
 Para captar esta llamada, se deberá ingresar la dirección de un controlador real que esté usando el componente con una acción similar a la siguiente:
 
+```
 public function recibirSms() { $this->Sms->recibir(); }
+```
 
 Si el controlador tiene el nombre "Avisos", se colocará la direccion http://servidor.com/avisos/recibir_sms como callback.
 
