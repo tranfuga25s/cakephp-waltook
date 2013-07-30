@@ -21,6 +21,11 @@ App::uses('HttpSocket', 'Network/Http');
     * Método de comunicación con el sistema
     */
 	private $_method = null;
+    
+    /**
+     * Codigo configurado de respuesta de mensajes
+     */
+     private $_request_code = null;
 
    /**
     * Dirección de comunicación con la API de Waltook
@@ -69,6 +74,7 @@ App::uses('HttpSocket', 'Network/Http');
 		$this->_key = Configure::read( 'Waltoolk.key' );
 		$this->_client_id = Configure::read( 'Waltoolk.client_id' );
 		$this->_method = Configure::read( 'Waltoolk.method' );
+        $this->_request_code = Configure::read( 'Waltoolk.request_code' );
 	}
 
  	public function parametros( $cliente_id, $key, $method ) {
@@ -81,10 +87,11 @@ App::uses('HttpSocket', 'Network/Http');
 	public function getKey() { return $this->_key; }
 	public function getMethod() { return $this->_method; }
 	public function getUrl() { return $this->_url; }
+    public function getRequestCode() { return $this->_request_code; }
 
     public static function habilitado() {
         // Verifico que esté configurado
-        if( ! Configure::check( 'Waltook.client_id' ) || ! Configure::check( 'Waltook.key' ) ) {
+        if( ! Configure::check( 'Waltoolk.client_id' ) || ! Configure::check( 'Waltoolk.key' ) ) {
             return false;
         }
     }
