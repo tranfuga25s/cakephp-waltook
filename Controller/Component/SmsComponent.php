@@ -94,6 +94,7 @@ App::uses('HttpSocket', 'Network/Http');
         if( ! Configure::check( 'Waltoolk.client_id' ) || ! Configure::check( 'Waltoolk.key' ) ) {
             return false;
         }
+        return true;
     }
 
    /**
