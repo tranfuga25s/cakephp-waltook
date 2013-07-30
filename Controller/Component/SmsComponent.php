@@ -21,7 +21,7 @@ App::uses('HttpSocket', 'Network/Http');
     * Método de comunicación con el sistema
     */
 	private $_method = null;
-    
+
     /**
      * Codigo configurado de respuesta de mensajes
      */
@@ -49,6 +49,9 @@ App::uses('HttpSocket', 'Network/Http');
 
     private $_limite_caracteres = 150;
 
+    private $_date_format = 'd-m-Y H:i:s';
+
+    private $controller = null;
 
 	private $mensajes_error = array(
 		1  => 'Transacción exitosa',
@@ -68,6 +71,7 @@ App::uses('HttpSocket', 'Network/Http');
     */
 	public function initialize( Controller $controller ) {
 		// Cargo la configuracion
+		$this->controller = $controller;
 		if( Configure::read( 'Waltoolk.client_id' ) == false ) {
 			throw new NotImplementedException( 'El sistema de Waltook no está configurado' );
 		}
@@ -88,6 +92,8 @@ App::uses('HttpSocket', 'Network/Http');
 	public function getMethod() { return $this->_method; }
 	public function getUrl() { return $this->_url; }
     public function getRequestCode() { return $this->_request_code; }
+    public function devolucionCorrecta() { print "OK"; }
+    public function devolucionIncorrecta() { print "ERROR"; }
 
     public static function habilitado() {
         // Verifico que esté configurado
@@ -271,19 +277,32 @@ App::uses('HttpSocket', 'Network/Http');
     * @return Array Array con los datos o el error
     */
 	public function recibir() {
-		if( $this->request->isGet() ) {
-			debug( $this->request->data );
-			$w_qstr = $this->decrypt( $this->request->data );
-			@parse_str($w_qstr, $w_data );
+		if( $this->controller->request->is( 'get' ) ) {
+		    $this->controller->autoRender = false;
+            $this->controller->layout = false;
+            $this->controller->RequestHandler->respondAs( 'text' );
+		    $datos = $this->controller->request->query;
+            if( is_array( $this->controller->request->query ) ) {
+                $datos = array_pop( $this->controller->request->query );
+            }
+            $w_qstr = $this->decrypt( $datos );
+			@parse_str( $w_qstr, $w_data );
+            $this->log( "Nuevo Sms Recibido" );
+            $this->log( print_r( $w_data , true ) );
 			if( is_array( $w_data ) ) {
 				$w_data['status'] = 1;
 				$w_data['message'] = $this->mensajes_error[$w_data['status']];
-				return $w_data;
+                $w_data['fechahora'] = date( $this->_date_format, $w_data['timestamp'] );
+				$mensaje = array( 'Sms' => $w_data );
+                $this->loadModel( 'Waltook.Sms' );
+                $this->Sms->save( $mensaje );
+                $this->devolucionCorrecta();
 			} else {
-				return array( 'error' => 3, 'message' => $this->mensajes_error[3] );
+                $this->Sms->devolucionIncorrecta();
+       		    $this->log( "Error de recepción de sms por callback".print_r( array( 'error' => 3, 'message' => $this->mensajes_error[3] ), true ) );
 			}
 		} else {
-			return array( "error" => 5, 'message' => $this->mensajes_error[5] );
+			$this->log( "Error de recepción de sms por callback". print_r(  array( "error" => 5, 'message' => $this->mensajes_error[5] ), true ) );
 		}
 	}
 
@@ -342,7 +361,7 @@ App::uses('HttpSocket', 'Network/Http');
                     $mensaje['texto'] = $mensaje['txt'];
                     unset( $mensaje['txt'] );
                     $mensaje['estado_texto'] = $estados[$mensaje['status']];
-                    $mensaje['fechahora'] = date( 'd-m-Y H:i:s', $mensaje['timestamp'] );
+                    $mensaje['fechahora'] = date(  $this->_date_format, $mensaje['timestamp'] );
                     $returns[] = array( 'Sms' => $mensaje );
                 }
             }
@@ -351,17 +370,6 @@ App::uses('HttpSocket', 'Network/Http');
             return false;
         }
 	}
-
-    /**
-     * Callback llamado por el sistema para cuando nos llega un sms
-     * Esta función se encarga de realizar todas las acciones correspondientes para generar el mensaje y dejarlo a disposición del controller
-     * Se deberá implementar el método afterReciveMessage( $message = array() ) para realizar alguna acción con el mensaje recibido.
-     * Si no está implementada la función el mensaje se loggeará en el sistema.
-     */
-    public function recibirMensaje() {
-
-
-    }
 
    /**
     * Función para conectar con el servidor de Waltook

@@ -57,3 +57,44 @@ array(
 	'status' => Estado de la solicitud
 )
 
+Lista de mensajes recibidos
+----- -- -------- ---------
+
+$mensajes = $this->Sms->obtenerListaMensajes( $status, $tid, $format, $flag )
+
+* status: Estado de los mensajes. 1=leidos, 0=no leidos, null = todos (por defecto).
+* tid: Identificador de los mensajes
+* format: Formato de devolucion. 1=Serializado, 2=JSON, 3=XML. Parametro por defecto seteado.
+* flag: Bandera de no leido. Si se pasa un 0, los mensajes obtenidos se pasan a leidos. Si se coloca como 1, se mantiene el estado de "No leido"
+
+La devolución será un array con el formato de cake:
+array(
+    [0] => array(
+        'Sms' => array(
+            'uid' => Numero de telefono
+            'mensaje' => Texto del mensaje
+            'status' => Identificacion interna de estado
+            'estado_texto' => Identificacion de estado en formato texto
+            'timestamp' => Fecha y hora recibido en formato timestamp
+            'fechahora' => Fecha y hora recibido en formato texto
+        )
+    ),
+    [1] => .....
+)
+
+si no existen mensajes, se devuelve un array vacío.
+
+Callback de recepción de mensajes
+-------- -- --------- -- --------
+
+El sistema Waltook permite abrir una conexión directamente al servidor del cliente al recibir un mensaje con el identificador del cliente.
+Si su identificador es por ejemplo: RSF y el sistema recibe un mensaje de texto con ese prefijo en el texto del mensaje, llamará a la dirección colocada como callback en la configuracion.
+
+Para captar esta llamada, se deberá ingresar la dirección de un controlador real que esté usando el componente con una acción similar a la siguiente:
+
+public function recibirSms() { $this->Sms->recibir(); }
+
+Si el controlador tiene el nombre "Avisos", se colocará la direccion http://servidor.com/avisos/recibir_sms como callback.
+
+El componente recibirá los datos y enviará la respuesta correcta al servidor de waltook.
+
