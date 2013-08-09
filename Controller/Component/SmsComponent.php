@@ -73,12 +73,13 @@ App::uses('HttpSocket', 'Network/Http');
 		// Cargo la configuracion
 		$this->controller = $controller;
 		if( Configure::read( 'Waltoolk.client_id' ) == false ) {
-			throw new NotImplementedException( 'El sistema de Waltook no está configurado' );
-		}
-		$this->_key = Configure::read( 'Waltoolk.key' );
-		$this->_client_id = Configure::read( 'Waltoolk.client_id' );
-		$this->_method = Configure::read( 'Waltoolk.method' );
-        $this->_request_code = Configure::read( 'Waltoolk.request_code' );
+			//throw new NotImplementedException( 'El sistema de Waltook no está configurado' );
+		} else {
+    		$this->_key = Configure::read( 'Waltoolk.key' );
+    		$this->_client_id = Configure::read( 'Waltoolk.client_id' );
+    		$this->_method = Configure::read( 'Waltoolk.method' );
+            $this->_request_code = Configure::read( 'Waltoolk.request_code' );
+        }
 	}
 
  	public function parametros( $cliente_id, $key, $method ) {
@@ -399,5 +400,23 @@ App::uses('HttpSocket', 'Network/Http');
 			throw new NotImplementedException( 'El sistema devolvió una consulta con error:' . $response->code.'<br />' );
 		}
 	}
+    
+    /**
+     * Función utilizada para configurar el sistema correctamente.
+     * @param cliente_id Identificador del cliente.
+     * @param key Clave de encriptacion
+     * @param metodo
+     * @param codigo Codigo de identificacion
+     */
+     public function configurarServicio( $cliente_id = null, $key = '', $method = 'GET', $codigo = null ) {
+         return false;
+         if( is_null( $cliente_id ) || strlen( $key ) == 0 || is_null( $codigo ) ) {
+            return false;   
+         }
+         
+         // Configuro el servicio con los parametros pasados e intento obtener el saldo
+         // Si funciona veo de configurar los datos pasados dentro del sistema
+         // escribiendo el archivo bootstrap.php
+     }
 
  }
