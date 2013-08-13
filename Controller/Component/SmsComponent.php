@@ -409,7 +409,7 @@ App::uses('HttpSocket', 'Network/Http');
      * @param codigo Codigo de identificacion
      */
      public function configurarServicio( $cliente_id = null, $key = '', $method = 'GET', $codigo = null ) {
-         return false;
+
          if( is_null( $cliente_id ) || strlen( $key ) == 0 || is_null( $codigo ) ) {
             return false;   
          }
@@ -417,6 +417,28 @@ App::uses('HttpSocket', 'Network/Http');
          // Configuro el servicio con los parametros pasados e intento obtener el saldo
          // Si funciona veo de configurar los datos pasados dentro del sistema
          // escribiendo el archivo bootstrap.php
+         $dir = new Folder( App::pluginPath('Waltook'), false );
+         $bootstrap = new File( $dir->pwd().DS.'Config'.DS.'bootstrap.php' );
+         if( $bootstrap->open( 'w', true ) ) {
+             $data  = "<?php \n";
+             $data .= " /** CONFIGURACION PARA WALTOOK **/ \n";
+             $data .= "Configure::write( 'Waltoolk.client_id', ".$cliente_id."  ); \n";
+             $data .= "Configure::write( 'Waltoolk.key', '".$key."' ); \n";
+             $data .= "Configure::write( 'Waltoolk.method', '".$method."' ); \n";
+             $data .= "Configure::write( 'Waltoolk.request_code', '".$codigo."' ); \n";
+             $data .= "// Generado: ".date( 'd-m-Y H:i:s' )." \n";
+             if( $bootstrap->write( $data, 'w', true ) ) {
+                 $bootstrap->close();
+                 // Cambio los permisos a solo lectura
+                 $dir->chmod( $dir->pwd().DS.'Config', 0522, false );
+                 return true;
+             } else {
+                 $this->log( "No se pudo escribir el archivo" );
+             }
+         } else {
+             die( "No se pudo abrir el archivo para escritura" );
+         }
+         return;
      }
 
  }
