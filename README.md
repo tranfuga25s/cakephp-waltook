@@ -116,3 +116,16 @@ Si el controlador tiene el nombre "Avisos", se colocará la direccion http://ser
 
 El componente recibirá los datos y enviará la respuesta correcta al servidor de waltook.
 
+Configuración automatica
+------------- ----------
+
+Si se desea utilizar algún metodo para configurar el servicio automaticamente, se puede utilizar la funcion configurarServicio
+Esta funcion recibe 4 parametros configurables:
+* cliente_id: Identificador del cliente de waltook.
+* key: Clave de encriptación obtenida mediante el panel de contorl de waltoolk.
+* method: 'GET' o 'POST' para configurar la forma en que se enviarán los pedidos al servidor.
+* codigo: 'COD' Codigo de respuesta que deben de usar los receptores del mensaje para desencadenar el sistema de avisos.
+
+El sistema generará automaticamente el archivo APP/Plugins/Waltook/Config/bootstrap.php.
+Se deberá tener permiso de escritura sobre este archivo. Luego de escribir el archivo el sistema le cambiar los permisos para que solo sea modificable por el usuario propietario.
+
