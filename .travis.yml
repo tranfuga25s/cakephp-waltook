@@ -22,4 +22,4 @@ before_script:
    }" > cakephp/app/Config/database.php
 
 script:
-  - ./cakephp/lib/Cake/Console/cake test Waltook ./cakephp/app/Plugin/Waltook/Test/Controller/Component/SmsComponent --stderr
+  - ./cakephp/app/Console/cake test Waltook Controller/Component/SmsComponent --stderr
