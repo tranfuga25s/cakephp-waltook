@@ -4,6 +4,8 @@ App::uses('Component', 'Controller');
 App::uses('AppController', 'Controller');
 App::uses('SessionComponent', 'Controller/Component');
 App::uses('SmsComponent', 'Waltook.Controller/Component');
+App::uses('Folder', 'Utility');
+App::uses('File', 'Utility');
 
 /**
  * DiaTurnoRecallComponent Test Case
@@ -54,11 +56,12 @@ class SmsComponentTest extends CakeTestCase {
      */
     public function testInicializacion() {
         $this->Sms->initialize( $this->controlador );
+        $this->Sms->parametros( $this->client_id, $this->key, $this->method, $this->request_code );
         $this->assertNotEqual( $this->Sms->getClientId(), 0, "La clave de cliente no puede ser cero" );
         $this->assertNotEqual( $this->Sms->getKey(), null, "La clave de cliente no puede ser nula" );
         $this->assertNotEqual( $this->Sms->getMethod(), null, "El metodo no puede ser nulo" );
         $this->assertNotEqual( $this->Sms->getUrl(), null, "El Url no puede ser nulo" );
-        $this->assertNotEqual( $this->Sms->getRequestCode(), null                      , "El Request code no coincide" );
+        $this->assertNotEqual( $this->Sms->getRequestCode(), null, "El Request code no coincide" );
     }
 
     public function testCodigosDevoluciones() {
@@ -69,6 +72,18 @@ class SmsComponentTest extends CakeTestCase {
 
     public function testHabilitado() {
         $this->assertEqual( $this->Sms->habilitado(), true, "El componente no está habilitado" );
+    }
+
+    public function testConfigurarServicio() {
+        $this->Sms->configurarServicio( $this->client_id, $this->key, $this->method, $this->request_code );
+        $this->assertFileExists( APP.'Plugin'.DS.'Waltook'.DS.'Config'.DS.'bootstrap.php', "No existe el archivo de configuracion" );
+        $archivo = new File( APP.'Plugin'.DS.'Waltook'.DS.'Config'.DS.'bootstrap.php', false );
+        $this->assertEqual( $archivo->open( 'r' ), true, "No se pudo abrir el archivo" );
+        $leido = $archivo->read();
+        $this->assertNotEqual( $leido, false, "No se pudo leer el archivo" );
+        $lineas = explode( "\n", $leido );
+        $this->assertNotCount( 0, $lineas, "No existen lineas en el archivo leido" );
+        $this->assertCount( 8, $lineas, "No existen la cantidad exacta de lineas - archivo modificado luego" );
     }
 
 }

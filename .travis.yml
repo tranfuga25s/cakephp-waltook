@@ -20,6 +20,7 @@ before_script:
      'persistent' => false,
    );
    }" > cakephp/app/Config/database.php
+   - chmod 777 ./cakephp/app/Plugin/Waltook/Config -R
 
 script:
   - ./cakephp/app/Console/cake test Waltook Controller/Component/SmsComponent --stderr

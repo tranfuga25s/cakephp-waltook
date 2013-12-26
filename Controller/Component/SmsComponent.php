@@ -82,10 +82,11 @@ App::uses('HttpSocket', 'Network/Http');
         }
 	}
 
- 	public function parametros( $cliente_id, $key, $method ) {
+ 	public function parametros( $cliente_id, $key, $method, $request_code = null ) {
 		$this->_client_id = $cliente_id;
 		$this->_key = $key;
 		$this->_method = $method;
+        $this->_request_code = $request_code;
  	}
 
 	public function getClientId() { return $this->_client_id; }
@@ -400,7 +401,7 @@ App::uses('HttpSocket', 'Network/Http');
 			throw new NotImplementedException( 'El sistema devolvió una consulta con error:' . $response->code.'<br />' );
 		}
 	}
-    
+
     /**
      * Función utilizada para configurar el sistema correctamente.
      * @param cliente_id Identificador del cliente.
@@ -411,14 +412,14 @@ App::uses('HttpSocket', 'Network/Http');
      public function configurarServicio( $cliente_id = null, $key = '', $method = 'GET', $codigo = null ) {
 
          if( is_null( $cliente_id ) || strlen( $key ) == 0 || is_null( $codigo ) ) {
-            return false;   
+            return false;
          }
-         
+
          // Configuro el servicio con los parametros pasados e intento obtener el saldo
          // Si funciona veo de configurar los datos pasados dentro del sistema
          // escribiendo el archivo bootstrap.php
          $dir = new Folder( App::pluginPath('Waltook'), false );
-         $bootstrap = new File( $dir->pwd().DS.'Config'.DS.'bootstrap.php' );
+         $bootstrap = new File( $dir->pwd().'Config'.DS.'bootstrap.php', true, 0777 );
          if( $bootstrap->open( 'w', true ) ) {
              $data  = "<?php \n";
              $data .= " /** CONFIGURACION PARA WALTOOK **/ \n";
