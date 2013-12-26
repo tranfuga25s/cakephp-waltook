@@ -35,6 +35,8 @@ class SmsComponentTest extends CakeTestCase {
         $this->Session = new SessionComponent( $this->Collection );
         $this->controlador = new AppController();
         $this->Sms->startup($this->controlador);
+        Configure::write( 'Waltook.client_id', $this->client_id );
+        Configure::write( 'Waltook.key', $this->key );
     }
 
     /**
