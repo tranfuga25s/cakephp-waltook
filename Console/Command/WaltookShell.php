@@ -6,10 +6,11 @@ App::uses( 'SmsComponent', 'Waltook.Controller/Component' );
  * @author Esteban Zeller
  */
 class WaltookShell extends Shell {
-    
+
     private $Sms = null;
     private $coleccion = null;
-    
+    public $uses = array( 'Gestotux.ConteoSms' );
+
     private function _inicializar() {
         $this->coleccion = new ComponentCollection();
         $this->Sms = new SmsComponent( $this->coleccion );
@@ -20,9 +21,13 @@ class WaltookShell extends Shell {
         $this->out( 'Utilizando número de cliente: '. $this->Sms->getClientID() );
         $this->out( 'Utilizando key: '.$this->Sms->getKey() );
         $this->out( 'Utilizando método:'.$this->Sms->getMethod() );
-        $this->out( 'Utilizando url:'.$this->Sms->getUrl() );      
+        $this->out( 'Utilizando url:'.$this->Sms->getUrl() );
+
+        Configure::config( 'Gestotux', new IniReader( ROOT.DS.APP_DIR.DS.'Plugin'.DS.'Gestotux'.DS.'Config'.DS.'cliente' ) );
+        Configure::load( '', 'Gestotux' );
+        $this->ConteoSms->setearCliente( Configure::read( 'Gestotux.cliente' ) );
     }
-    
+
 	/**
 	 * Main execution of shell
 	 * Obtiene automaticamente la cantidad de crédito necesario para probar la comunicación con el servidor
@@ -35,9 +40,9 @@ class WaltookShell extends Shell {
 		$this->out( 'Cantidad de mensajes salientes: '. $devolucion['salida'] );
 		$this->out( 'Cantidad de mensajes entrantes: '. $devolucion['entrada'] );
 		$this->out( 'Mensaje de estado: '. $devolucion['status'] );
-		return;		
+		return;
 	}
-    
+
     public function getMensajes() {
         $this->_inicializar();
         $this->out( '----> Consultando lista de mensajes en el servidor' );
@@ -55,11 +60,10 @@ class WaltookShell extends Shell {
             }
         }
     }
-    
+
     public function enviarMensaje() {
         $this->_inicializar();
         $this->out( 'ATENCION: ENVIAR MENSAJES POSEE UN CARGO.' );
-        debug( $this->args );
         $this->out( 'Enviando mensaje: ' );
         $this->out( 'Destinatario: '.$this->args[0] );
         $this->out( 'Mensaje: '.$this->args[1] );
@@ -68,6 +72,11 @@ class WaltookShell extends Shell {
             $this->out( 'Intentando enviar mensaje' );
             $r = $this->Sms->enviar( $this->args[0], $this->args[1] );
             if( $r ) {
+                if( ! $this->ConteoSms->agregarEnviado() ) {
+                    $this->out( 'No se pudo registrar el envio' );
+                } else {
+                    $this->out( 'Se registró el envío' );
+                }
                 $this->out( 'Mensaje enviado correctamente' );
             } else {
                 $this->out( 'Mensaje no enviado.' );
