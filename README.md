@@ -1,5 +1,6 @@
 cakephp-waltook
 ===============
+[![Build Status](https://travis-ci.org/tranfuga25s/cakephp-waltook.png?branch=master)](https://travis-ci.org/tranfuga25s/cakephp-waltook)
 
 Una implementación del servicio sms Walltook para cakephp.
 
