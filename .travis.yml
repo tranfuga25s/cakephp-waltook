@@ -1,0 +1,25 @@
+language: php
+
+php:
+  - 5.3
+
+before_script:
+  - git clone git://github.com/cakephp/cakephp ../cakephp
+  - cd ..
+  - mv cakephp-waltook cakephp/app/Plugin/Waltook
+  - chmod -R 777 cakephp/app/tmp
+  - sh -c "mysql -e 'CREATE DATABASE cakephp_test;'"
+  - echo "<?php
+   class DATABASE_CONFIG {
+   public \$default = array(
+     'datasource' => 'Database/Mysql',
+     'database' => 'cakephp_test',
+     'host' => '0.0.0.0',
+     'login' => 'travis',
+     'host' => '',
+     'persistent' => false,
+   );
+   }" > cakephp/app/Config/database.php
+
+script:
+  - ./lib/Cake/Console/cake test Waltook Controller/Component/SmsComponent --stderr
