@@ -8,6 +8,8 @@ before_script:
   - cd ..
   - mv cakephp-waltook cakephp/app/Plugin/Waltook
   - chmod -R 777 cakephp/app/tmp
+  - chmod 777 ./cakephp/app/Plugin/Waltook/Config -R
+  - echo "CakePlugin::load( 'Waltook', array( 'bootstrap' => true ) );" >> ./cakephp/app/Config/bootstrap.php  
   - sh -c "mysql -e 'CREATE DATABASE cakephp_test;'"
   - echo "<?php
    class DATABASE_CONFIG {
@@ -20,8 +22,6 @@ before_script:
      'persistent' => false,
    );
    }" > cakephp/app/Config/database.php
-   - chmod 777 ./cakephp/app/Plugin/Waltook/Config -R
-   - echo "CakePlugin::load( 'Waltook', array( 'bootstrap' => true ) );" >> ./cakephp/app/Config/bootstrap.php
 
 script:
   - ./cakephp/app/Console/cake test Waltook Controller/Component/SmsComponent --stderr
