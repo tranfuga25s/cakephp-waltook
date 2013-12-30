@@ -21,7 +21,7 @@ before_script:
    );
    }" > cakephp/app/Config/database.php
    - chmod 777 ./cakephp/app/Plugin/Waltook/Config -R
-   - echo "CakePlugin::load( 'Waltook', array( 'bootstrap' => true ) );" >> cakephp/app/Config/bootstrap.php
+   - echo "CakePlugin::load( 'Waltook', array( 'bootstrap' => true ) );" >> ./cakephp/app/Config/bootstrap.php
 
 script:
   - ./cakephp/app/Console/cake test Waltook Controller/Component/SmsComponent --stderr
