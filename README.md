@@ -63,11 +63,14 @@ $credito = $this->Sms->getCredito();
 ```
 
 El array devuelto por esta funcion tendrá el siguiente formato:
+
+```
 array(
-	'entrada' => Cantidad de mensajes disponibles para recibir
-	'salida' => Cantidad de mensajes disponibles para enviar desde el sistema
+	'entrada' => Cantidad de mensajes disponibles para recibir,
+	'salida' => Cantidad de mensajes disponibles para enviar desde el sistema,
 	'status' => Estado de la solicitud
 )
+```
 
 Lista de mensajes recibidos
 ----- -- -------- ---------
@@ -110,12 +113,26 @@ Si su identificador es por ejemplo: RSF y el sistema recibe un mensaje de texto 
 Para captar esta llamada, se deberá ingresar la dirección de un controlador real que esté usando el componente con una acción similar a la siguiente:
 
 ```
-public function recibirSms() { $this->Sms->recibir(); }
+public function recibirSms() { 
+    $mensaje = $this->Sms->recibir(); 
+}
 ```
 
 Si el controlador tiene el nombre "Avisos", se colocará la direccion http://servidor.com/avisos/recibir_sms como callback.
 
-El componente recibirá los datos y enviará la respuesta correcta al servidor de waltook.
+El componente recibirá los datos y enviará la respuesta correcta al servidor de waltook. El array devuelto tendrá la forma:
+```
+array(
+    'Sms' => array(
+            'uid' => Numero de telefono
+            'mensaje' => Texto del mensaje
+            'status' => Identificacion interna de estado
+            'estado_texto' => Identificacion de estado en formato texto
+            'timestamp' => Fecha y hora recibido en formato timestamp
+            'fechahora' => Fecha y hora recibido en formato texto
+        )
+)
+```
 
 Configuración automatica
 ------------- ----------

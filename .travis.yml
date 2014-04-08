@@ -10,6 +10,8 @@ before_script:
   - cd ..
   - cp -R cakephp-waltook cakephp/app/Plugin/Waltook
   - chmod -R 777 cakephp/app/tmp
+  - chmod 777 ./cakephp/app/Plugin/Waltook/Config -R
+  - echo "CakePlugin::load( 'Waltook', array( 'bootstrap' => true ) );" >> ./cakephp/app/Config/bootstrap.php
   - sh -c "mysql -e 'CREATE DATABASE cakephp_test;'"
   - echo "<?php
    class DATABASE_CONFIG {
