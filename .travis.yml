@@ -12,23 +12,23 @@ before_script:
   - chmod -R 777 cakephp/app/tmp
   - chmod 777 ./cakephp/app/Plugin/Waltook/Config -R
   - echo "CakePlugin::load( 'Waltook', array( 'bootstrap' => true ) );" >> ./cakephp/app/Config/bootstrap.php
+  - chmod 777 ./cakephp/app/Plugin/Waltook/Config -R
+  - cp cakephp/app/Plugin/Waltook/composer.json composer.json
+  - cp cakephp/app/Plugin/Waltook/.coveralls.yml .coveralls.yml
+  - composer install --dev
+  - mkdir -p build/logs
   - sh -c "mysql -e 'CREATE DATABASE cakephp_test;'"
   - echo "<?php
-   class DATABASE_CONFIG {
-   public \$default = array(
-     'datasource' => 'Database/Mysql',
-     'database' => 'cakephp_test',
-     'host' => '0.0.0.0',
-     'login' => 'travis',
-     'host' => '',
-     'persistent' => false,
-   );
-   }" > cakephp/app/Config/database.php
-   - chmod 777 ./cakephp/app/Plugin/Waltook/Config -R
-   - cp cakephp/app/Plugin/Waltook/composer.json composer.json
-   - cp cakephp/app/Plugin/Waltook/.coveralls.yml .coveralls.yml
-   - composer install --dev
-   - mkdir -p build/logs
+     class DATABASE_CONFIG {
+     public \$default = array(
+       'datasource' => 'Database/Mysql',
+       'database' => 'cakephp_test',
+       'host' => '0.0.0.0',
+       'login' => 'travis',
+       'host' => '',
+       'persistent' => false,
+     );
+     }" > cakephp/app/Config/database.php
 
 script:
   - ./cakephp/app/Console/cake test Waltook Controller/Component/SmsComponent --stderr --coverage-clover build/logs/clover-plugin.xml
