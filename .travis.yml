@@ -31,7 +31,7 @@ before_script:
      }" > cakephp/app/Config/database.php
 
 script:
-  - ./cakephp/app/Console/cake test Waltook Controller/Component/SmsComponent --stderr --coverage-clover build/logs/clover-plugin.xml
+  - ./cakephp/app/Console/cake test Waltook AllTests --stderr --coverage-clover build/logs/clover-plugin.xml
 
 
 after_script:
