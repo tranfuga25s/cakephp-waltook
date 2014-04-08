@@ -25,7 +25,8 @@ before_script:
    );
    }" > cakephp/app/Config/database.php
    - chmod 777 ./cakephp/app/Plugin/Waltook/Config -R
-   - cp cakephp/app/Plugin/PreguntaFrecuente/.coveralls.yml .coveralls.yml
+   - cp cakephp/app/Plugin/Waltook/composer.json composer.json
+   - cp cakephp/app/Plugin/Waltook/.coveralls.yml .coveralls.yml
    - composer install --dev
    - mkdir -p build/logs
 
